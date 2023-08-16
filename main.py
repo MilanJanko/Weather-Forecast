@@ -1,5 +1,5 @@
-import pandas as pd
 import streamlit as st
+import plotly.express as px
 
 st.set_page_config(page_title='Weather Forecast', layout='centered')
 
@@ -12,3 +12,9 @@ option = st.selectbox(label='Select data to view',
                       options=['Temperature', 'Sky Conditions'])
 
 st.subheader(f"{option} for the next {days} days in {place}")
+
+dates = ['1', '2', '3']
+temperatures = [10, 11, 25]
+
+figure = px.line(x=dates, y=temperatures, labels={"x": 'Date', "y": 'Temperature (C)'})
+st.plotly_chart(figure)
