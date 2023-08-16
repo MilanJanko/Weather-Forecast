@@ -18,14 +18,14 @@ st.subheader(f"{option} for the next {days} days in {place}")
 if place:
     try:
         # Adding Temperature or Sky Conditions data
-        dates, data = get_data(place, days, option)
+        dates, temp, sky = get_data(place, days, option)
 
         # Creating temperature or sky condition plot based on option
 
         # Create Temperature Figure
         if option == 'Temperature':
             # Add temperature according to Celsius values
-            data = [value / 10 for value in data]
+            data = [value / 10 for value in temp]
             figure = px.line(x=dates, y=data, labels={"x": 'Date', "y": 'Temperature (C)'},
                              line_shape='spline', markers=True, template='plotly')
             figure.update_layout(xaxis=dict(tickformat="%a %H:%M"),
@@ -40,7 +40,10 @@ if place:
 
             # Convert string dates to datetime objects
             datetime_dates = [datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S') for date_str in dates]
-            render_list = [(image_path[value], date) for value, date in zip(data, datetime_dates)]
+            # Prepare temperature, sky and images for rendering
+            temp = [round(value/10, 1) for value in temp]
+            render_list = [(image_path[value_sky], date, value_temp)
+                           for value_sky, date, value_temp in zip(sky, datetime_dates, temp)]
 
             # Display images and formatted dates in rows of 7
             cols_per_row = 7
@@ -49,9 +52,11 @@ if place:
 
                 # Create a new row of columns
                 cols = st.columns(cols_per_row)
-                for col, (image_path, date) in zip(cols, row_images):
-                    col.image(image_path, width=100)
+                for col, (image_path, date, temperature) in zip(cols, row_images):
                     col.write(date.strftime('%a- %H:%M'))
+                    col.image(image_path, width=120)
+                    col.write(f"Temperature {temperature} °C")
+                    col.write(10*'\n')
 
     except KeyError:
         st.error('Please enter valid city name.', icon="🚨")
