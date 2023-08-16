@@ -1,5 +1,6 @@
 import streamlit as st
 import plotly.express as px
+from functions import get_data
 
 st.set_page_config(page_title='Weather Forecast', layout='centered')
 
@@ -13,8 +14,21 @@ option = st.selectbox(label='Select data to view',
 
 st.subheader(f"{option} for the next {days} days in {place}")
 
-dates = ['1', '2', '3']
-temperatures = [10, 11, 25]
+if place:
+    # Adding Temperature or Sky Conditions data
+    dates, data = get_data(place, days, option)
 
-figure = px.line(x=dates, y=temperatures, labels={"x": 'Date', "y": 'Temperature (C)'})
-st.plotly_chart(figure)
+    # Creating temperature or sky condition plot based on option
+
+    # Create Temperature Figure
+    if option == 'Temperature':
+        figure = px.line(x=dates, y=data, labels={"x": 'Date', "y": 'Temperature (C)'})
+        st.plotly_chart(figure)
+
+    # Render images on the browser
+    if option == 'Sky Conditions':
+        # Adding path to the image - Dictionary that represents values from data if option is Sky Conditions
+        image_path = {'Clear': 'images/clear.png', 'Clouds': 'images/cloud.png',
+                      'Rain': 'images/rain.png', 'Snow': 'images/snow.png'}
+        render_list = [image_path[value] for value in data]
+        st.image(render_list, width=100)

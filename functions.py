@@ -10,11 +10,12 @@ def get_data(place, days=None, option=None):
     filtered = data['list']
     days_value = days * 8
     filtered = filtered[:days_value]
+    dates = [dictionary['dt_txt'] for dictionary in filtered]
     if option == 'Temperature':
         filtered = [dictionary['main']['temp'] for dictionary in filtered]
     elif option == 'Sky Conditions':
         filtered = [dictionary['weather'][0]['main'] for dictionary in filtered]
-    return filtered
+    return dates, filtered
 
 
 if __name__ == '__main__':
