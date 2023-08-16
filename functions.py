@@ -1,5 +1,6 @@
 import keys
 import requests
+
 api_key = keys.api_key
 
 
@@ -19,4 +20,4 @@ def get_data(place, days=None, option=None):
 
 
 if __name__ == '__main__':
-    print(get_data(place='Tokyo', days=3, option='Sky Conditions'))
+    print(__name__)

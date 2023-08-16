@@ -1,6 +1,7 @@
 import streamlit as st
 import plotly.express as px
 from functions import get_data
+from datetime import datetime
 
 st.set_page_config(page_title='Weather Forecast', layout='centered')
 
@@ -15,20 +16,42 @@ option = st.selectbox(label='Select data to view',
 st.subheader(f"{option} for the next {days} days in {place}")
 
 if place:
-    # Adding Temperature or Sky Conditions data
-    dates, data = get_data(place, days, option)
+    try:
+        # Adding Temperature or Sky Conditions data
+        dates, data = get_data(place, days, option)
 
-    # Creating temperature or sky condition plot based on option
+        # Creating temperature or sky condition plot based on option
 
-    # Create Temperature Figure
-    if option == 'Temperature':
-        figure = px.line(x=dates, y=data, labels={"x": 'Date', "y": 'Temperature (C)'})
-        st.plotly_chart(figure)
+        # Create Temperature Figure
+        if option == 'Temperature':
+            # Add temperature according to Celsius values
+            data = [value / 10 for value in data]
+            figure = px.line(x=dates, y=data, labels={"x": 'Date', "y": 'Temperature (C)'},
+                             line_shape='spline', markers=True, template='plotly')
+            figure.update_layout(xaxis=dict(tickformat="%a %H:%M"),
+                                 yaxis=dict(title="Temperature (C)"))
+            st.plotly_chart(figure)
 
-    # Render images on the browser
-    if option == 'Sky Conditions':
-        # Adding path to the image - Dictionary that represents values from data if option is Sky Conditions
-        image_path = {'Clear': 'images/clear.png', 'Clouds': 'images/cloud.png',
-                      'Rain': 'images/rain.png', 'Snow': 'images/snow.png'}
-        render_list = [image_path[value] for value in data]
-        st.image(render_list, width=100)
+        # Render images on the browser
+        if option == 'Sky Conditions':
+            # Adding path to the image - Dictionary that represents values from data if option is Sky Conditions
+            image_path = {'Clear': 'images/clear.png', 'Clouds': 'images/cloud.png',
+                          'Rain': 'images/rain.png', 'Snow': 'images/snow.png'}
+
+            # Convert string dates to datetime objects
+            datetime_dates = [datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S') for date_str in dates]
+            render_list = [(image_path[value], date) for value, date in zip(data, datetime_dates)]
+
+            # Display images and formatted dates in rows of 7
+            cols_per_row = 7
+            for i in range(0, len(render_list), cols_per_row):
+                row_images = render_list[i:i + cols_per_row]
+
+                # Create a new row of columns
+                cols = st.columns(cols_per_row)
+                for col, (image_path, date) in zip(cols, row_images):
+                    col.image(image_path, width=100)
+                    col.write(date.strftime('%a- %H:%M'))
+
+    except KeyError:
+        st.error('Please enter valid city name.', icon="🚨")
